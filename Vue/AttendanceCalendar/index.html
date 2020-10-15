@@ -1,0 +1,156 @@
+﻿<!-- By Jireh012-->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <link rel="stylesheet" href="css/lib.min.css">
+    <link rel="stylesheet" href="css/rewrite.css">
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <div role="mainContainer" id="app">
+        <div class="calendar-view">
+            <div class="panel panel-warning setting-calender">
+                <div class="panel-body">
+                    <div class="row margin-bottom-10">
+                        <div class="col-sm-2 padding-left-20">
+                            <select class="form-control margin-left-10" v-model="year">
+                                <option value="2019" selected="">2019</option>
+                                <option value="2020">2020</option>
+                                <option value="2021">2021</option>
+                                <option value="2022">2022</option>
+                                <option value="2023">2023</option>
+                                <option value="2024">2024</option>
+                                <option value="2025">2025</option>
+                                <option value="2026">2026</option>
+                                <option value="2027">2027</option>
+                                <option value="2028">2028</option>
+                                <option value="2029">2029</option>
+                                <option value="2030">2030</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-10">
+                            <button class="btn btn-primary" role="save">保存</button>
+                            <span class="text-success margin-left-10">
+                                <span class="label grey-icon">灰</span>日期表示关闭门禁，
+                                <span class="label white-icon">白</span>日期表示开启门禁。点击日期可以在2种状态中切换。
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row calender-container">
+                        <div class="col-sm-12 padding-left-20">
+                            <div v-for="(calendar,index) in calendarData" class="datepicker datepicker-dropdown dropdown-menu datepicker-orient-left datepicker-orient-bottom">
+                                <div class="datepicker-days">
+                                    <table class=" table-condensed" :data-month="index">
+                                        <thead>
+                                            <tr>
+                                                <th class="prev" style="visibility: hidden;">«</th>
+                                                <th colspan="5">{{year}} - {{zh_month[index]}}月</th>
+                                                <th class="next" style="visibility: hidden;">»</th>
+                                            </tr>
+                                            <tr>
+                                                <th v-for="e in zh_day" class="dow" v-text="e"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="(tr,tr_index) in calendar">
+                                                <td v-for="(td,td_index) in tr" :class="_module(td,months[index])" :data-day="td.date-1" v-text="td.date" v-on:click="tdSelect(index,tr_index,td_index)"></td>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot></tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                          
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.bootcss.com/jquery/1.11.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script>
+
+        var vm = new Vue({
+            el: '#app',
+            data: {
+                year: 2019,
+                months: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'],
+                zh_month: ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二'],
+                zh_day: ['日', '一', '二', '三', '四', '五', '六'],
+                tr_list:[1,2,3,4,5,6],
+                firstDay: '',
+                calendarData:[]
+            },
+            created: function () {
+                this.initData();
+            },
+            computed: {
+                _module() {
+                    return function (td, month) {
+                        var that = this;  
+                        var lastDay = new Date(that.year, month, 0);
+                        var classStr = "";
+                        if (td.date <= 0 || td.date > lastDay.getDate()) {
+                            classStr = "day old";
+                        }
+                        else {
+                            classStr =  "day"; 
+                        }
+                        if (td.select) {
+                            classStr += " new";
+                        }
+                        return classStr;
+                        
+                    }
+                }
+            },
+            methods: {
+                initData: function () {
+                    var that = this;
+                    var calendarData = [];
+                    $.each(that.months, function (e, m) {
+                        
+                        var count = -(new Date(that.year, e, 1).getDay()) + 1;
+                        console.log(that.year, m, count);
+                        var tr_list = [];
+                        var num = 0;
+                        for (var i = 0; i < 6; i++) {
+                            var tr = [];
+                            for (var j = 0; j < 7; j++) {
+                                var newcount = count + num;
+
+                                tr.push({ date: newcount, select: 0 });
+                                num++;
+                            }
+                            tr_list.push(tr);
+                        }
+                        calendarData.push(tr_list);
+                    });
+                    that.calendarData = calendarData;
+                },
+                tdSelect: function (i, j, z) {
+                    console.log(i, j);
+                    var calendarData = this.calendarData;
+                    var lastDay = new Date(this.year, i+1, 0);
+                    if (this.calendarData[i][j][z].date > 0 && this.calendarData[i][j][z].date <= lastDay.getDate()) {
+                        this.calendarData[i][j][z].select = !this.calendarData[i][j][z].select;
+                    }
+                    console.log(this.calendarData);
+                }
+            },
+            watch: {
+                'year': function (val, oldVal) {
+                    console.log(val);
+                    this.initData();
+
+                },
+
+            }
+
+        })
+    </script>
+</body>
+</html>
